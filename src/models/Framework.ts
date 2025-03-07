@@ -1,5 +1,9 @@
 import mongoose, { Schema } from 'mongoose';
 import { Framework } from '../types/Framework';
+import axios from 'axios';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const breakingChangeSchema = new Schema({
   version: { type: String, required: true },
