@@ -1,4 +1,7 @@
-export const mainFrameworks = [
+import { IFramework } from "../interfaces/framework.interface";
+import { v4 as uuidv4 } from 'uuid';
+
+export const mainFrameworks: IFramework[] = [
     {
       name: "React",
       currentVersion: "18.2.0",
@@ -6,7 +9,8 @@ export const mainFrameworks = [
       releaseDate: new Date("2022-06-14"),
       repository: "facebook/react",
       documentationUrl: "https://react.dev",
-      breakingChanges: []
+      breakingChanges: [],
+      id: uuidv4()
     },
     {
       name: "Angular",
@@ -15,7 +19,8 @@ export const mainFrameworks = [
       releaseDate: new Date("2023-11-08"),
       repository: "angular/angular",
       documentationUrl: "https://angular.io/docs",
-      breakingChanges: []
+      breakingChanges: [],
+      id: uuidv4()
     },
     {
       name: "Vue.js",
@@ -24,7 +29,8 @@ export const mainFrameworks = [
       releaseDate: new Date("2023-05-17"),
       repository: "vuejs/core",
       documentationUrl: "https://vuejs.org",
-      breakingChanges: []
+      breakingChanges: [],
+      id: uuidv4()
     },
     {
       name: "Next.js",
@@ -33,7 +39,8 @@ export const mainFrameworks = [
       releaseDate: new Date("2023-10-26"),
       repository: "vercel/next.js",
       documentationUrl: "https://nextjs.org/docs",
-      breakingChanges: []
+      breakingChanges: [],
+      id: uuidv4()
     },
     {
       name: "Nuxt.js",
@@ -42,7 +49,8 @@ export const mainFrameworks = [
       releaseDate: new Date("2023-10-25"),
       repository: "nuxt/nuxt",
       documentationUrl: "https://nuxt.com/docs",
-      breakingChanges: []
+      breakingChanges: [],
+      id: uuidv4()
     },
     {
       name: "Svelte",
@@ -51,7 +59,8 @@ export const mainFrameworks = [
       releaseDate: new Date("2023-07-01"),
       repository: "sveltejs/svelte",
       documentationUrl: "https://svelte.dev/docs",
-      breakingChanges: []
+      breakingChanges: [],
+      id: uuidv4()
     },
     {
       name: "Express",
@@ -60,7 +69,8 @@ export const mainFrameworks = [
       releaseDate: new Date("2022-10-08"),
       repository: "expressjs/express",
       documentationUrl: "https://expressjs.com",
-      breakingChanges: []
+      breakingChanges: [],
+      id: uuidv4()
     },
     {
       name: "NestJS",
@@ -69,7 +79,8 @@ export const mainFrameworks = [
       releaseDate: new Date("2023-08-11"),
       repository: "nestjs/nest",
       documentationUrl: "https://docs.nestjs.com",
-      breakingChanges: []
+      breakingChanges: [],
+      id: uuidv4()
     },
     {
       name: "Django",
@@ -78,7 +89,8 @@ export const mainFrameworks = [
       releaseDate: new Date("2023-04-05"),
       repository: "django/django",
       documentationUrl: "https://docs.djangoproject.com",
-      breakingChanges: []
+      breakingChanges: [],
+      id: uuidv4()
     },
     {
       name: "Laravel",
@@ -87,6 +99,7 @@ export const mainFrameworks = [
       releaseDate: new Date("2023-02-14"),
       repository: "laravel/laravel",
       documentationUrl: "https://laravel.com/docs",
-      breakingChanges: []
+      breakingChanges: [],
+      id: uuidv4()
     }
   ];

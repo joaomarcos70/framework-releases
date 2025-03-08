@@ -3,6 +3,15 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import frameworkRoutes from './routes/frameworkRoutes';
+import { IUser } from './interfaces/user';
+
+import updateFrameworksJob from './tasks/update-frameworks';
+
+declare module "express-serve-static-core" {
+  interface Request {
+    user?: IUser;
+  }
+}
 
 dotenv.config();
 
@@ -13,9 +22,9 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/framew
 // Middlewares
 app.use(cors());
 app.use(express.json());
-
-// Rotas
 app.use('/api', frameworkRoutes);
+
+updateFrameworksJob();
 
 // Conexão com MongoDB
 mongoose.connect(MONGODB_URI)

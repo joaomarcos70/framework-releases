@@ -13,4 +13,5 @@ export interface BreakingChange {
   description: string;
   impact: 'LOW' | 'MEDIUM' | 'HIGH';
   migrationGuide?: string;
+  migrationContent?: string;
 } 
