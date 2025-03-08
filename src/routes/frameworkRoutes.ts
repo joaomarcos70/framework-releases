@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAllFrameworks, 
+import { checkForUpdates, getAllFrameworks, 
     getFrameworkByName, 
     insertFrameworks, 
     updateFramework, 
@@ -15,5 +15,6 @@ router.get('/frameworks/:name', getFrameworkByName);
 router.post('/frameworks/insert-many', insertFrameworks);
 router.put('/frameworks/:name', decodeToken, updateFramework);
 router.put('/frameworks/update-many', decodeToken, updateManyFrameworks);
+router.post('/frameworks/check-updates', checkForUpdates);
 
 export default router; 

@@ -114,10 +114,9 @@ export const checkForUpdatesService = async (): Promise<void> => {
                         }
                     }
                 );
-
-                console.log("📦 Atualização encontrada para:", framework.name);
                 const latestVersion = response.data.tag_name;
-                const releaseNotes = response.data.body || '';
+                const releaseNotes = response.data.body || 'No release notes found';
+                const description = releaseNotes.length > 100 ? releaseNotes.substring(0, 100) + '...' : releaseNotes;
 
                 if (latestVersion !== framework.latestVersion) {
                     const hasBreakingChanges = releaseNotes.toLowerCase().includes('breaking change') ||
@@ -126,8 +125,8 @@ export const checkForUpdatesService = async (): Promise<void> => {
                     if (hasBreakingChanges) {
                         framework.breakingChanges.push({
                             version: latestVersion,
-                            description: 'Possíveis breaking changes detectados - verifique as release notes',
-                            impact: 'MEDIUM',
+                            description: description,
+                            impact: hasBreakingChanges ? 'HIGH' : 'MEDIUM',
                             migrationGuide: response.data.html_url,
                             migrationContent: releaseNotes
                         });
@@ -135,12 +134,15 @@ export const checkForUpdatesService = async (): Promise<void> => {
 
                     framework.latestVersion = latestVersion;
                     framework.releaseDate = new Date(response.data.published_at);
-                    await updateFrameworkService(framework as IFramework);
+                    await updateFrameworkService({
+                        ...framework,
+                        currentVersion: latestVersion
+                    } as IFramework);   
 
                     console.log(`✅ ${framework.name} atualizado para versão ${latestVersion}`);
                 }
-            } catch (error) {
-                console.error(`❌ Erro ao verificar atualizações do framework ${framework.name}:`, error);
+            } catch (error:any) {
+                console.error(`❌ Erro ao verificar atualizações do framework ${framework.name}:`, error.response.data);
             }
         }
     } catch (error) {

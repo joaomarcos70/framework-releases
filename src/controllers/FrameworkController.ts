@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { mainFrameworks } from '../models/all-frameworks';
-import { getAllFrameworksService, getFrameworkByNameService, insertManyFrameworkService, updateFrameworkService, updateManyFrameworkService } from '../services/frameworks.service';
+import { checkForUpdatesService, getAllFrameworksService, getFrameworkByNameService, insertManyFrameworkService, updateFrameworkService, updateManyFrameworkService } from '../services/frameworks.service';
 import { IFramework } from '../interfaces/framework.interface';
 
 dotenv.config();
@@ -85,3 +85,13 @@ export const insertFrameworks = async (req: Request, res: Response): Promise<voi
     res.status(500).json({ message: 'Erro ao inserir frameworks', error });
   }
 }
+
+export const checkForUpdates = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const response = await checkForUpdatesService();
+    res.json(response);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao verificar atualizações', error });
+  }
+}
+

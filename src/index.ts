@@ -24,7 +24,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/api', frameworkRoutes);
 
-updateFrameworksJob();
+//updateFrameworksJob();
 
 // Conexão com MongoDB
 mongoose.connect(MONGODB_URI)
