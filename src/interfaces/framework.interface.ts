@@ -1,3 +1,5 @@
+import { IBreakingChange } from "../types/Framework";
+
 export interface IFramework {
     id: string;
     name: string;
@@ -6,6 +8,8 @@ export interface IFramework {
     releaseDate: Date;
     repository: string;
     documentationUrl: string;
-    breakingChanges: any[];
+    breakingChanges: IBreakingChange;
+    oldVersions: IBreakingChange[];
+    updateId: number;
 }
 

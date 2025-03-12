@@ -1,13 +1,7 @@
-import { IFramework } from "../interfaces/framework.interface";
-import { v4 as uuidv4 } from 'uuid';
-
-export interface IRepository {
-    name: string;
-    repository: string;
-    documentationUrl: string;
-}
-
-export const listRepositories = [
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.listRepositories = void 0;
+exports.listRepositories = [
     {
         name: "React",
         repository: "facebook/react",
@@ -58,7 +52,7 @@ export const listRepositories = [
         repository: "laravel/laravel",
         documentationUrl: "https://laravel.com/docs"
     },
-    { 
+    {
         name: "Flutter",
         repository: "flutter/flutter",
         documentationUrl: "https://flutter.dev/docs"
@@ -83,4 +77,4 @@ export const listRepositories = [
         repository: "pallets/flask",
         documentationUrl: "https://flask.palletsprojects.com/en/2.3.x/"
     },
-]
+];

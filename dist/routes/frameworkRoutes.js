@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const FrameworkController_1 = require("../controllers/FrameworkController");
+const decode_token_1 = require("../middlewares/decode-token");
+const router = (0, express_1.Router)();
+router.get('/frameworks', FrameworkController_1.getAllFrameworks);
+router.get('/frameworks/:name', FrameworkController_1.getFrameworkByName);
+router.post('/frameworks/insert-many', FrameworkController_1.insertFrameworks);
+router.put('/frameworks/:name', decode_token_1.decodeToken, FrameworkController_1.updateFramework);
+router.put('/frameworks/update-many', decode_token_1.decodeToken, FrameworkController_1.updateManyFrameworks);
+router.post('/frameworks/check-updates', FrameworkController_1.checkForUpdates);
+exports.default = router;

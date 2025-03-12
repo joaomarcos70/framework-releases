@@ -9,6 +9,9 @@ import {
     updateFrameworkRepository,
     updateManyFrameworkRepository
 } from '../repository/frameworks.repository';
+import { hasBreakingChanges } from '../shared/utils/breaking-change.utils';
+import { IRepository } from '../models/all-frameworks';
+import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
 
@@ -47,13 +50,16 @@ export const getFrameworkByNameService = async (name: string): Promise<IApiRetur
 
 export const updateFrameworkService = async (framework: IFramework): Promise<IApiReturns> => {
     try {
-        const frameworkUpdated = await updateFrameworkRepository(framework);
-        if (!frameworkUpdated) {
-            throw new Error('Framework not found');
+
+        const response = await updateFrameworkRepository(framework);
+
+        if (!response) {
+            throw new Error('Framework not updated');
         }
+
         return {
             success: true,
-            data: frameworkUpdated,
+            data: null,
             message: 'Framework updated successfully'
         };
     }
@@ -65,6 +71,9 @@ export const updateFrameworkService = async (framework: IFramework): Promise<IAp
 export const insertManyFrameworkService = async (frameworks: IFramework[]): Promise<IApiReturns> => {
     try {
         const frameworksInserted = await insertManyFrameworkRepository(frameworks);
+
+        console.log("frameworksInserted", frameworksInserted);
+
         if (!frameworksInserted) {
             throw new Error('Frameworks not inserted');
         }
@@ -98,15 +107,17 @@ export const updateManyFrameworkService = async (frameworks: IFramework[]): Prom
 
 export const checkForUpdatesService = async (): Promise<void> => {
     try {
-        const frameworks = await getAllFrameworksRepository();
+        const frameworks = await getAllFrameworksRepository()
+        const frameworksToUpdate: IFramework[] = [];
+
         if (!frameworks || frameworks.length === 0) {
             throw new Error('Nenhum framework encontrado para verificar atualizações');
         }
-
-        for (const framework of frameworks) {
+        //frameworks que já tenho cadastrados
+        for (const [index, framework] of frameworks.entries()) {
             try {
-                const response = await axios.get(
-                    `https://api.github.com/repos/${framework.repository}/releases/latest`,
+                const updates = await axios.get(
+                    `https://api.github.com/repos/${framework.repository}/releases`,
                     {
                         headers: {
                             'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
@@ -114,40 +125,82 @@ export const checkForUpdatesService = async (): Promise<void> => {
                         }
                     }
                 );
-                const latestVersion = response.data.tag_name;
-                const releaseNotes = response.data.body || 'No release notes found';
-                const description = releaseNotes.length > 100 ? releaseNotes.substring(0, 100) + '...' : releaseNotes;
 
-                if (latestVersion !== framework.latestVersion) {
-                    const hasBreakingChanges = releaseNotes.toLowerCase().includes('breaking change') ||
-                        releaseNotes.toLowerCase().includes('breaking changes');
+                if (!updates?.data || updates?.data.length === 0) {
+                    console.warn(`⚠️ Nenhum release encontrado para ${framework.name}`);
+                    continue;
+                }
 
-                    if (hasBreakingChanges) {
-                        framework.breakingChanges.push({
+                updates.data.forEach(async (update: { tag_name: string; body: string; html_url: string; id: number }, index: number) => {
+                    const latestVersion = update?.tag_name;
+                    const releaseNotes = update?.body || 'No release notes found';
+                    const description = releaseNotes.length > 100 ? releaseNotes.substring(0, 100) + '...' : releaseNotes;
+
+                    if (index === 0) {
+                        framework.latestVersion = latestVersion;
+                        framework.breakingChanges = {
                             version: latestVersion,
                             description: description,
-                            impact: hasBreakingChanges ? 'HIGH' : 'MEDIUM',
-                            migrationGuide: response.data.html_url,
-                            migrationContent: releaseNotes
-                        });
+                            impact: hasBreakingChanges(releaseNotes) ? 'HIGH' : 'LOW',
+                            migrationGuide: update?.html_url,
+                            migrationContent: releaseNotes,
+                            updateId: update?.id
+                        }
                     }
 
-                    framework.latestVersion = latestVersion;
-                    framework.releaseDate = new Date(response.data.published_at);
-                    await updateFrameworkService({
-                        ...framework,
-                        currentVersion: latestVersion
-                    } as IFramework);   
+                    if (index !== 0) {
+                        framework.oldVersions.push({
+                            version: latestVersion,
+                            description: description,
+                            impact: hasBreakingChanges(releaseNotes) ? 'HIGH' : 'LOW',
+                            migrationGuide: update?.html_url,
+                            migrationContent: releaseNotes,
+                            updateId: update?.id
+                        })
+                    }
+                    return framework;
+                })
+                
+                frameworksToUpdate.push(framework as unknown as IFramework);
 
-                    console.log(`✅ ${framework.name} atualizado para versão ${latestVersion}`);
-                }
-            } catch (error:any) {
+            } catch (error: any) {
                 console.error(`❌ Erro ao verificar atualizações do framework ${framework.name}:`, error.response.data);
             }
         }
+        const response = await updateManyFrameworkService(frameworksToUpdate);
+        if (!response) {
+            throw new Error('Frameworks not updated');
+        }
+        return;
     } catch (error) {
         console.error('❌ Erro ao executar checkForUpdatesService:', error);
+        throw error;
     }
 };
+export const remapRepositoryToFramework = (repository: IRepository[]): IFramework[] => {
+    const frameworks: IFramework[] = [];
+    repository.map((repo) => {
+        frameworks.push({
+            id: uuidv4(),
+            name: repo.name,
+            repository: repo.repository,
+            documentationUrl: repo.documentationUrl,
+            updateId: 0,
+            currentVersion: '',
+            latestVersion: '',
+            releaseDate: new Date(),
+            breakingChanges: {
+                version: '',
+                description: '',
+                impact: 'LOW',
+                migrationGuide: '',
+                migrationContent: '',
+                updateId: 0
+            },
+            oldVersions: []
+        })
+    })
+    return frameworks;
+}
 
 

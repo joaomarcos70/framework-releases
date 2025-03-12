@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import dotenv from 'dotenv';
-import { mainFrameworks } from '../models/all-frameworks';
-import { checkForUpdatesService, getAllFrameworksService, getFrameworkByNameService, insertManyFrameworkService, updateFrameworkService, updateManyFrameworkService } from '../services/frameworks.service';
+import { checkForUpdatesService, getAllFrameworksService, getFrameworkByNameService, insertManyFrameworkService, remapRepositoryToFramework, updateFrameworkService, updateManyFrameworkService } from '../services/frameworks.service';
 import { IFramework } from '../interfaces/framework.interface';
+import { IRepository, listRepositories } from '../models/all-frameworks';
 
 dotenv.config();
 
@@ -73,9 +73,11 @@ export const updateManyFrameworks = async (req: Request, res: Response): Promise
 
 export const insertFrameworks = async (req: Request, res: Response): Promise<void> => {
   try {
-    const frameworksToInsert = (req.body.frameworks as IFramework[]) || mainFrameworks;
+    const frameworksToInsert = (req.body.listRepositories as IRepository[]) || listRepositories;
 
-    const response = await insertManyFrameworkService(frameworksToInsert);
+    const response = await insertManyFrameworkService(remapRepositoryToFramework(frameworksToInsert));
+
+    
     if (!response.success) {
       res.status(404).json(response);
       return;

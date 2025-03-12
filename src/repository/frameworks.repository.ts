@@ -3,7 +3,7 @@ import { FrameworkModel } from "../models/Framework";
 
 export const getAllFrameworksRepository = async () => {
     try {
-        const frameworks = await FrameworkModel.find().sort({ createdAt: -1 });
+        const frameworks = await FrameworkModel.find().sort({ createdAt: -1 }).lean();
         return frameworks;
     } catch (error) {
         throw new Error(error as string);
@@ -21,25 +21,44 @@ export const getFrameworkByNameRepository = async (name: string) => {
 
 export const updateFrameworkRepository = async (framework: IFramework) => {
     try {
-        const frameworkUpdated = await FrameworkModel.findOneAndUpdate({ id: framework.id }, framework, { new: true });
-        return frameworkUpdated;
+        const updateFields: any = { $set: {} };
+
+        Object.entries(framework).forEach(([key, value]) => {
+            if (key !== "oldVersions" && value !== undefined) {
+                updateFields.$set[key] = value;
+            }
+        });
+
+        if (framework.oldVersions?.length) {
+            updateFields.$push = { oldVersions: { $each: framework.oldVersions } };
+        }
+
+        const response = await FrameworkModel.updateOne(
+            { id: framework.id }, 
+            updateFields
+        );
+
+        return response;
     } catch (error) {
         throw new Error(error as string);
     }
-}
+};
+
 
 export const insertManyFrameworkRepository = async (frameworks: IFramework[]) => {
     try {
-        const existingFrameworks = await FrameworkModel.find({
-            id: { $in: frameworks.map(f => f.id) }
-        });
+        const bulkOperations = frameworks.map(f => ({
+            updateOne: {
+                filter: { name: f.name },
+                update: { $setOnInsert: f },
+                upsert: true
+            }
+        }));
 
-        if (existingFrameworks.length > 0) {
-            throw new Error(`Frameworks já existem: ${existingFrameworks.map(f => f.name).join(', ')}`);
-        }
+        const response = await FrameworkModel.bulkWrite(bulkOperations);
 
-        const response = await FrameworkModel.insertMany(frameworks);
         return response;
+
     } catch (error) {
         throw new Error((error as Error).message || 'Erro desconhecido ao inserir frameworks');
     }
